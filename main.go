@@ -44,10 +44,13 @@ func fetch() (string, error) {
 	findings := items.FindAllString(original, -1)
 	var res bytes.Buffer
 	skipped := 0
+outer:
 	for _, item := range findings {
-		if strings.Contains(item, "nzz.ch/sport") {
-			skipped++
-			continue
+		for _, domain := range blacklist {
+			if strings.Contains(item, "nzz.ch/"+domain) {
+				skipped++
+				continue outer
+			}
 		}
 		res.WriteString(item)
 	}
@@ -55,4 +58,18 @@ func fetch() (string, error) {
 	modified := allItems.ReplaceAllString(original, res.String())
 	log.Printf("request took %v (%d of %d items skipped)", time.Since(start), skipped, len(findings))
 	return modified, nil
+}
+
+var blacklist = []string{
+	"sport",
+	"briefing",
+	"feuilleton",
+	"panorama",
+	"zuerich",
+	"mobilitaet",
+	"gesellschaft",
+	"digital",
+	"meinung",
+	"leserdebatte",
+	"video",
 }
